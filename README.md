@@ -1,0 +1,1 @@
+# Kayas_Dayrit_Gabito_Macarimbang_handwritten_text_recognition
