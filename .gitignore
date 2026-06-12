@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+.DS_Store
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+/final_custom_trocr_model/v2026.06.12_171116/checkpoint-19
+/final_custom_trocr_model/v2026.06.12_171116/checkpoint-38
+/final_custom_trocr_model/v2026.06.12_171116/checkpoint-57
+/final_custom_trocr_model/v2026.06.12_171116/checkpoint-76
+/final_custom_trocr_model/v2026.06.12_171116/checkpoint-95
+final_custom_trocr_model/v2026.06.12_171116/model.safetensors

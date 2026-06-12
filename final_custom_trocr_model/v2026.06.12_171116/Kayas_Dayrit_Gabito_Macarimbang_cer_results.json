@@ -1,0 +1,38 @@
+{
+    "run_version": "v2026.06.12_171116",
+    "output_dir": "./final_custom_trocr_model\\v2026.06.12_171116",
+    "final_evaluation": {
+        "eval_loss": 4.417010307312012,
+        "eval_cer": 0.992393509127789,
+        "eval_runtime": 43.9136,
+        "eval_samples_per_second": 1.708,
+        "eval_steps_per_second": 0.433,
+        "epoch": 5.0
+    },
+    "cer_history": [
+        {
+            "epoch": 1.0,
+            "eval_cer": 0.7702839756592292
+        },
+        {
+            "epoch": 2.0,
+            "eval_cer": 0.8940162271805274
+        },
+        {
+            "epoch": 3.0,
+            "eval_cer": 0.7363083164300203
+        },
+        {
+            "epoch": 4.0,
+            "eval_cer": 0.9959432048681541
+        },
+        {
+            "epoch": 5.0,
+            "eval_cer": 0.992393509127789
+        },
+        {
+            "epoch": 5.0,
+            "eval_cer": 0.992393509127789
+        }
+    ]
+}
