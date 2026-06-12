@@ -7,6 +7,7 @@ from torch.utils.data import Dataset
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel, Seq2SeqTrainer, Seq2SeqTrainingArguments
 import json
 import evaluate
+import numpy as np
 
 # 1. ENVIRONMENT CONFIGURATION & VRAM GUARDRAILS
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -57,23 +58,40 @@ class HandWrittenDataset(Dataset):
 
         return {"pixel_values": pixel_values, "labels": torch.tensor(labels)}
 
+# def compute_metrics(pred):
+#     labels_ids = pred.label_ids
+#     pred_ids = pred.predictions
+
+#     # 1. Decode predicted token IDs back into text strings
+#     pred_str = processor.batch_decode(pred_ids, skip_special_tokens=True)
+    
+#     # 2. Replace the -100 padding tokens we used earlier back to the pad_token_id 
+#     # so the tokenizer can decode the ground truth correctly
+#     labels_ids[labels_ids == -100] = processor.tokenizer.pad_token_id
+#     label_str = processor.batch_decode(labels_ids, skip_special_tokens=True)
+
+#     # 3. Compute the Character Error Rate
+#     cer = cer_metric.compute(predictions=pred_str, references=label_str)
+
+#     # You can return multiple metrics here (like word error rate) if needed
+#     return {"cer": cer}
+
 def compute_metrics(pred):
     labels_ids = pred.label_ids
     pred_ids = pred.predictions
 
-    # 1. Decode predicted token IDs back into text strings
+    # ✅ FIX: replace -100 padding sentinels before decoding predictions
+    pred_ids = np.where(pred_ids != -100, pred_ids, processor.tokenizer.pad_token_id)
+
     pred_str = processor.batch_decode(pred_ids, skip_special_tokens=True)
-    
-    # 2. Replace the -100 padding tokens we used earlier back to the pad_token_id 
-    # so the tokenizer can decode the ground truth correctly
+
+    # Same sanitization you already had for labels
     labels_ids[labels_ids == -100] = processor.tokenizer.pad_token_id
     label_str = processor.batch_decode(labels_ids, skip_special_tokens=True)
 
-    # 3. Compute the Character Error Rate
     cer = cer_metric.compute(predictions=pred_str, references=label_str)
-
-    # You can return multiple metrics here (like word error rate) if needed
     return {"cer": cer}
+
 
 # 3. INITIALIZE SMALL MODEL & PROCESSOR
 # trocr-small uses a tiny DeiT encoder and a tiny UniLM text decoder (~60M total parameters)
@@ -104,7 +122,12 @@ training_args = Seq2SeqTrainingArguments(
     logging_steps=10,
     fp16=torch.cuda.is_available(), # Crucial: Uses half-precision execution to slash VRAM usage by ~50%
     dataloader_num_workers=0,       # Keeps CPU data pipelining efficient without choke
-    report_to="none"                # Shuts off third-party logging overheads
+    report_to="none",              # Shuts off third-party logging overheads
+    max_grad_norm=1.0,                        # clip gradient spikes
+    generation_max_length=128,                # stop the max_length=21 truncation
+    load_best_model_at_end=True,              # save epoch 1's weights before they regress
+    metric_for_best_model="eval_cer",
+    greater_is_better=False,
 )
 
 
